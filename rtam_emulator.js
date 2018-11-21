@@ -139,6 +139,7 @@ function clock(state) {
 function run(state, debug) {
 	let currentState = state;
 	let limit = 0;
+	let previousOutput = 0;
 	while((currentState.instructions[0] != "HALT" || Math.max(...currentState.jumps) > 0) && limit++ < 10000){
 		if(debug)console.log();
 		if(debug)console.log("Instruction: "+currentState.instructions[0].join(","));
@@ -146,9 +147,13 @@ function run(state, debug) {
 
 		if(debug)console.log(currentState);
 
-		if(limit % state.instructions.length == 0)console.log("Output: "+currentState.registers[7]);
+		if(currentState.registers[7] != previousOutput){
+			console.log(limit + "/"+Math.floor(limit/state.instructions.length)+"# Output: "+currentState.registers[7]);
+			previousOutput = currentState.registers[7];
+		}
 	}
-	if(!debug)console.log("Final Output: "+currentState.registers[7]);
+	console.log("Final Output: "+currentState.registers[7]);
+	console.log("Approx Run Time: "+Math.floor((limit*8.25)/60)+" minutes or "+Math.floor((((limit*8.25)/60)/60)*10)/10+" hours")
 }
 
 run(createState(`
@@ -162,3 +167,53 @@ W2,G2 --R2=G2
 J2,< --continue looping until R8 >= G2
 HALT
 `,[2,6,1,0,0]), false);
+
+
+// Primes, 
+// R8 is output, 
+// R3 is index, 
+// R4 is diff, 
+// R5 is total
+
+// G1 is 1
+// G2 is 2
+// G3 is 15
+// G4 is 0
+
+run(createState(`
+	W3,G2
+	W4,G2
+	E1
+W1,R4
+W2,R3
+J1,<,>
+	W8,R3
+	W1,R3
+	W2,G1
+	W3,W5,+
+	W4,G2
+E1
+	W1,R5
+	W2,R4
+	W5,-
+W1,R5
+W2,R4
+J1,<,>
+	W1,R3
+	W2,G1
+	W3,W5,+
+	W4,G2
+E1
+W1,R5
+W2,G4
+J1,<,>
+	W1,R4
+	W2,G1
+	W4,+
+	W5,R3
+E1
+W1,R3
+W2,G3
+J1,<
+	HALT
+`,[1,2,15,0,0]), false);
