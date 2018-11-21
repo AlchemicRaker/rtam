@@ -18,7 +18,7 @@ G1-5, general purpose inputs, constants
 // const inputs = [5,10,1,0,0];
 
 function parseInstructions(lines){
-	return lines.trim().split("\n").map(line=>line.trim().split(","));
+	return lines.trim().split("\n").map(line=>line.trim().split(" ")[0].split(","));
 }
 
 //construct a new state
@@ -151,12 +151,14 @@ function run(state, debug) {
 	if(!debug)console.log("Final Output: "+currentState.registers[7]);
 }
 
-run(createState(`W8,G1
-E2
-W1,R8
-W2,G3
-W8,+
-W1,R8
-W2,G2
-J2,<
-HALT`,[2,6,1,0,0]), false);
+run(createState(`
+W8,G1 --R8=G1
+E2    --end setup
+W1,R8 --R1=R8
+W2,G3 --R2=1
+W8,+  --R8++
+W1,R8 --R1=R8
+W2,G2 --R2=G2
+J2,< --continue looping until R8 >= G2
+HALT
+`,[2,6,1,0,0]), false);
