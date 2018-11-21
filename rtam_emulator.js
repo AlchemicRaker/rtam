@@ -77,9 +77,13 @@ function readSignal(state, signal) {
 	}
 }
 
+const mutableSignals = ["W1","W2","W3","W4","W5","W6","W7","W8","HALT"];
+
 //returns a new state
 function applySignal(state, signal, bus) {
-	const newRegisters = state.registers.map(x=>x);
+	const newRegisters = [...state.registers];
+	if(Math.max(...state.jumps) > 0 && mutableSignals.includes(signal))
+			return state;
 	switch(signal){
 		case "W1":
 			newRegisters[0] = bus;
@@ -121,7 +125,7 @@ function applySignal(state, signal, bus) {
 //take a state and return a new state
 function clock(state) {
 	const bus = Math.max(...state.instructions[0].map(signal=>readSignal(state, signal)));
-	console.log("Bus: "+bus);
+
 	const modifiedState = 
 		state.instructions[0].reduce((rstate, rsignal)=>applySignal(rstate, rsignal, bus), state);
 
@@ -132,21 +136,27 @@ function clock(state) {
 }
 
 //clock until the state halts
-function run(state) {
+function run(state, debug) {
 	let currentState = state;
 	let limit = 0;
-	while((currentState.instructions[0] != "HALT" || Math.max(...currentState.jumps) > 0) && limit++ < 100){
+	while((currentState.instructions[0] != "HALT" || Math.max(...currentState.jumps) > 0) && limit++ < 10000){
+		if(debug)console.log();
+		if(debug)console.log("Instruction: "+currentState.instructions[0].join(","));
 		currentState = clock(currentState);
 
-		console.log(currentState);
-		console.log("Register 8: "+currentState.registers[7]);
+		if(debug)console.log(currentState);
 
+		if(limit % state.instructions.length == 0)console.log("Output: "+currentState.registers[7]);
 	}
+	if(!debug)console.log("Final Output: "+currentState.registers[7]);
 }
 
-let sampleProgram = `W1,G1
-W2,G2
+run(createState(`W8,G1
+E2
+W1,R8
+W2,G3
 W8,+
-HALT`;
-
-run(createState(sampleProgram,[4,5,1,0,0]));
+W1,R8
+W2,G2
+J2,<
+HALT`,[2,6,1,0,0]), false);
