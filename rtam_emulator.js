@@ -140,7 +140,7 @@ function run(state, debug) {
 	let currentState = state;
 	let limit = 0;
 	let previousOutput = 0;
-	while((currentState.instructions[0] != "HALT" || Math.max(...currentState.jumps) > 0) && limit++ < 10000){
+	while((currentState.instructions[0] != "HALT" || Math.max(...currentState.jumps) > 0) && limit++ < 1000000){
 		if(debug)console.log();
 		if(debug)console.log("Instruction: "+currentState.instructions[0].join(","));
 		currentState = clock(currentState);
